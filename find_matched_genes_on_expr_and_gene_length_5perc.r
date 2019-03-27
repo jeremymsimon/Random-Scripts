@@ -8,6 +8,9 @@ colnames(other.gene.set) = c("Length","Expr")
 
 final.matched.genes = c()
 
+#For each gene in the primary gene set, order the other gene set on expression similarity then traverse down the list until a gene with a gene length within 5% of the primary gene is found.
+#This will give us the gene within 5% of given gene length that has the most similar expression value.
+#Once found, remove it from the other gene list as to not get duplicates (greedy)
 for(i in 1:(nrow(primary.genes))){
 	cur.gene.name = rownames(primary.genes[i,])
 	cur.gene.length = primary.genes[i,1]
