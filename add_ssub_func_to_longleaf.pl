@@ -1,6 +1,11 @@
 #! /usr/bin/perl -w
 use strict;
 
+#Usage: perl add_ssub_func_to_longleaf.pl </place/for/log/directory> <email> 
+#Example: perl add_ssub_func_to_longleaf.pl /proj/dllab/hepperla hepperla@unc.edu
+#
+#Script that adds the function ssub to your environment for UNC's Longleaf HPCC. It mimics the old LSF bsub function and allows you to submit a job and receive an email upon completion detailing the job output and usage stats."
+
 my $log_dir_destination = shift;
 my $email = shift;
 
