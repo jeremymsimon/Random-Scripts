@@ -65,9 +65,9 @@ my $ssub_command = "export SLURMLOGLOC=$log_dir_destination/SLURM_logs/
 
 function ssub {
         day=\$(date '+%Y/%m/%d')
-        mkdir -p \$SLURMLOGLOC/SLURM_logs/\$day
+        mkdir -p \$SLURMLOGLOC\$day
         log=\$(date '+%Y%m%d_%H-%M-%S-%3N')
-        cmd=\"sbatch -o \$SLURMLOGLOC/SLURM_logs/\$day/\$log -e \$SLURMLOGLOC/SLURM_logs/\$day/\$log --time=10-12 --open-mode=append \$*\"
+        cmd=\"sbatch -o \$SLURMLOGLOC\$day/\$log -e \$SLURMLOGLOC/\$day/\$log --time=10-12 --open-mode=append \$*\"
         notify=\$(echo \$cmd | sed -nE 's/.+notify.(\\w+).+/\1/p')
         if ! { [ \"\$notify\" = \"ON\" ] || [ \"\$notify\" = \"OFF\" ]; }; then
                 notify=\"ON\"
@@ -75,20 +75,20 @@ function ssub {
 
             cmd2=\$(echo \$cmd | sed -E 's/--notify\=\\w+ //')
 
-        echo -e \"Your job looked like:\\n###################################################################################\\n\" \>\> \$SLURMLOGLOC/SLURM_logs/\$day/\$log
-        echo \$cmd2 \>\> \$SLURMLOGLOC/SLURM_logs/\$day/\$log
-        echo -e \"\\n###################################################################################\\n\" \>\> \$SLURMLOGLOC/SLURM_logs/\$day/\$log
+        echo -e \"Your job looked like:\\n###################################################################################\\n\" \>\> \$SLURMLOGLOC\$day/\$log
+        echo \$cmd2 \>\> \$SLURMLOGLOC/\$day/\$log
+        echo -e \"\\n###################################################################################\\n\" \>\> \$SLURMLOGLOC\$day/\$log
         jobID=\"\$(eval \$cmd2 | cut -f 4 -d ' ')\"
 
         if [ \"\$notify\" = \"ON\" ]; then
-                memory=\"sbatch -o $pine_junk/\$log -d afterany:\$jobID --partition general --wrap=\\\"echo -e '\\n\\nJob runtime metrics:\\n###################################################################################\\n' \>\> \$SLURMLOGLOC/SLURM_logs/\$day/\$log;\
-                sacct --format=\"JobID,JobName,Partition,AllocCPUS,Submit,Elapsed,State,CPUTime,MaxRSS\" --units=G -j \$jobID \>\> \$SLURMLOGLOC/SLURM_logs/\$day/\$log;\
-                echo -e '\\n###################################################################################\\n' \>\> \$SLURMLOGLOC/SLURM_logs/\$day/\$log;\
-                echo 'Subject: SLURM job \$jobID' | cat - \$SLURMLOGLOC/SLURM_logs/\$day/\$log | sendmail $email\\\"\"
+                memory=\"sbatch -o $pine_junk/\$log -d afterany:\$jobID --partition general --wrap=\\\"echo -e '\\n\\nJob runtime metrics:\\n###################################################################################\\n' \>\> \$SLURMLOGLOC\$day/\$log;\
+                sacct --format=\"JobID,JobName,Partition,AllocCPUS,Submit,Elapsed,State,CPUTime,MaxRSS\" --units=G -j \$jobID \>\> \$SLURMLOGLOC\$day/\$log;\
+                echo -e '\\n###################################################################################\\n' \>\> \$SLURMLOGLOC\$day/\$log;\
+                echo 'Subject: SLURM job \$jobID' | cat - \$SLURMLOGLOC\$day/\$log | sendmail $email\\\"\"
         elif [ \"\$notify\" = \"OFF\" ]; then
-                memory=\"sbatch -o $pine_junk/\$log -d afterany:\$jobID --partition general --wrap=\\\"echo -e '\\n\\nJob runtime metrics:\\n###################################################################################\\n' \>\> \$SLURMLOGLOC/SLURM_logs/\$day/\$log;\
-                sacct --format=\"JobID,JobName,Partition,AllocCPUS,Submit,Elapsed,State,CPUTime,MaxRSS\" --units=G -j \$jobID \>\> \$SLURMLOGLOC/SLURM_logs/\$day/\$log;\
-                echo -e '\\n###################################################################################\\n' \>\> \$SLURMLOGLOC/SLURM_logs/\$day/\$log\\\"\"
+                memory=\"sbatch -o $pine_junk/\$log -d afterany:\$jobID --partition general --wrap=\\\"echo -e '\\n\\nJob runtime metrics:\\n###################################################################################\\n' \>\> \$SLURMLOGLOC\$day/\$log;\
+                sacct --format=\"JobID,JobName,Partition,AllocCPUS,Submit,Elapsed,State,CPUTime,MaxRSS\" --units=G -j \$jobID \>\> \$SLURMLOGLOC\$day/\$log;\
+                echo -e '\\n###################################################################################\\n' \>\> \$SLURMLOGLOC\$day/\$log\\\"\"
         fi
             memoryID=\"\$(eval \$memory | cut -f 4 -d ' ')\"
 
@@ -97,22 +97,21 @@ function ssub {
                 queue=\"general\"
         fi
 
-            echo \"Job \<\$jobID\> submitted to partition \<\$queue\>\" \>\> \$SLURMLOGLOC/SLURM_logs/\$day/\$log
+            echo \"Job \<\$jobID\> submitted to partition \<\$queue\>\" \>\> \$SLURMLOGLOC\$day/\$log
 
         if [ \$notify = \"ON\" ]; then
-                echo -e \"Job email notification enabled\\n\" \>\> \$SLURMLOGLOC/SLURM_logs/\$day/\$log
+                echo -e \"Job email notification enabled\\n\" \>\> \$SLURMLOGLOC\$day/\$log
         elif [ \$notify = \"OFF\" ]; then
-                echo -e \"Job email notification disabled\\n\" \>\> \$SLURMLOGLOC/SLURM_logs/\$day/\$log
+                echo -e \"Job email notification disabled\\n\" \>\> \$SLURMLOGLOC\$day/\$log
         fi
 
             echo \"\$jobID\"
         wd=\$(pwd)
-        echo -e \"Current Working Directory: \$wd\\n\\n\" \>\> \$SLURMLOGLOC/SLURM_logs/\$day/\$log
-        echo -e \"The output (if any) follows:\\n\" \>\> \$SLURMLOGLOC/SLURM_logs/\$day/\$log
+        echo -e \"Current Working Directory: \$wd\\n\\n\" \>\> \$SLURMLOGLOC\$day/\$log
+        echo -e \"The output (if any) follows:\\n\" \>\> \$SLURMLOGLOC\$day/\$log
 }
 ";
 print OUT $ssub_command;
 close(OUT);
 
 my $cat_command = `cat $pine_junk/ssub.txt >> ~/.bashrc`;
-system("source ~/.bashrc");
