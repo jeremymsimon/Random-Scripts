@@ -6,6 +6,44 @@ use strict;
 #
 #Script that adds Jeremy Simon's ssub function to your environment for UNC's Longleaf HPCC. It mimics the old LSF bsub function and allows you to submit a job and receive an email upon completion detailing the job output and usage stats."
 
+=begin comment
+#########################################################################################
+#########################################################################################
+The basic idea is that where you'd normally run a one-off submission like:
+sbatch [...] --partition=general --wrap="stuff"
+
+you would instead run
+ssub [...] --partition=general --notify=ON --wrap=\"stuff with \'escaped\' special characters\"
+
+or for the quieter option (aka no email sent, but logfile still saved):
+ssub [...] --partition=general --notify=OFF --wrap=\"stuff with \'escaped\' special characters\"
+
+or if you just want to use defaults (notify=ON, partition=general)
+ssub [...] --wrap=\"stuff with \'escaped\' special characters\"
+
+
+The --partition and --notify are now both *optional* parameters, and it can be a " " or "=" that separates them from their set value. --notify will default to ON, and --partition will default to general. 
+
+The general idea behind the code is to capture date and time (to the millisecond), create a log file named by that timestamp, dump the command issued and other things to that logfile, then run sbatch pointing slurm to append any output to that file. Then, as soon as the sbatch job finishes, run an sacct on that job ID to get memory usage and runtime info, dumping those results to the bottom of the same log file. Then if --notify=ON, it will send the contents of that log file in an email to you. 
+
+
+If you run just a single job like the basic mockup above, you'll get just the job ID printed to the screen upon submission. 
+
+If you want to submit a sequence of jobs, each dependent on the previous, you would create a script (e.g. 'nano script.sh') that would look something like:
+
+source ~/.bashrc                      ## these shell scripts apparently don't load the bashrc unless it's some kind of interactive mode. this will make sure you don't get a "ssub: command not found" error.
+jid1=$(ssub --wrap=\"stuff with \'escaped\' special characters\")
+jid2=$(ssub -d afterok:$jid1 --wrap=\"stuff with \'escaped\' special characters\")
+jid3=$(ssub -d afterok:$jid2 --wrap=\"stuff with \'escaped\' special characters\")
+echo $jid1,$jid2,$jid3
+...
+
+then execute with a simple "sh script.sh". If all goes well, the only output to the command-line you'll get will be a comma-separated list of the job IDs spawned for this sequence, but you'll get fancy emails as each job finishes/exits
+#########################################################################################
+#########################################################################################
+=end comment
+=cut
+
 my $log_dir_destination = shift;
 my $email = shift;
 
@@ -76,3 +114,4 @@ print OUT $ssub_command;
 close(OUT);
 
 my $cat_command = `cat $pine_junk/ssub.txt >> ~/.bashrc`;
+system("source ~/.bashrc");
