@@ -58,6 +58,7 @@ my @onyen = split(/\(/, $id[0]);
 $onyen[1] =~ s/\)//;
 my $pine_junk = "/pine/scr/".substr($onyen[1], 0, 1)."/".substr($onyen[1], 1, 1)."/".$onyen[1]."/junk"; 
 system("mkdir $pine_junk");
+system("mkdir $log_dir_destination/SLURM_logs/");
 
 open(OUT, ">$pine_junk/ssub.txt");
 my $ssub_command = "export SLURMLOGLOC=$log_dir_destination/SLURM_logs/
